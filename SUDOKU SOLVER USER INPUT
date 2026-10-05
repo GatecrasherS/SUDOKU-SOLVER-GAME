@@ -1,0 +1,106 @@
+#include <iostream>
+
+using namespace std;
+
+#define N 9
+
+// Checks whether it will be legal to assign num to the given row, col
+bool isSafe(int grid[N][N], int row, int col, int num) {
+    // Check if the same number is in the row
+    for (int x = 0; x < N; x++)
+        if (grid[row][x] == num)
+            return false;
+
+    // Check if the same number is in the col
+    for (int x = 0; x < N; x++)
+        if (grid[x][col] == num)
+            return false;
+
+    // Check if the same number is in the 3x3 box
+    int startRow = row - row % 3, startCol = col - col % 3;
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            if (grid[i + startRow][j + startCol] == num)
+                return false;
+
+    return true;
+}
+
+// Solves the Sudoku grid using Backtracking
+bool solveSudoku(int grid[N][N], int row, int col) {
+    if (row == N - 1 && col == N)
+        return true;
+
+    if (col == N) {
+        row++;
+        col = 0;
+    }
+
+    if (grid[row][col] > 0)
+        return solveSudoku(grid, row, col + 1);
+
+    for (int num = 1; num <= 9; num++) {
+        if (isSafe(grid, row, col, num)) {
+            grid[row][col] = num;
+            
+            if (solveSudoku(grid, row, col + 1))
+                return true;
+        }
+        grid[row][col] = 0; // Backtrack
+    }
+    return false;
+}
+
+// Visual layout helper to print the grid with standard section partitions
+void printGrid(int grid[N][N]) {
+    for (int i = 0; i < N; i++) {
+        if (i % 3 == 0 && i != 0) {
+            cout << "------+-------+------" << endl;
+        }
+        for (int j = 0; j < N; j++) {
+            if (j % 3 == 0 && j != 0) {
+                cout << "| ";
+            }
+            if (grid[i][j] == 0)
+                cout << ". ";
+            else
+                cout << grid[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+int main() {
+    int grid[N][N];
+
+    cout << "=== Interactive Sudoku Solver Engine ===" << endl;
+    cout << "Enter your 9x9 Sudoku puzzle row by row." << endl;
+    cout << "Use '0' for blank/empty cells.\n" << endl;
+
+    // Interactive loops for user row matrix extraction
+    for (int i = 0; i < N; i++) {
+        cout << "Enter Row " << i + 1 << " (9 space-separated numbers): ";
+        for (int j = 0; j < N; j++) {
+            cin >> grid[i][j];
+
+            // Real-time input boundary check
+            while (grid[i][j] < 0 || grid[i][j] > 9) {
+                cout << "Invalid input! Numbers must be between 0 and 9. Re-enter item: ";
+                cin >> grid[i][j];
+            }
+        }
+    }
+
+    cout << "\n--- Your Target Input Grid ---" << endl;
+    printGrid(grid);
+    cout << "\nCalculating solution states..." << endl;
+
+    if (solveSudoku(grid, 0, 0)) {
+        cout << "\n--- Solved Sudoku Grid Matrix ---" << endl;
+        printGrid(grid);
+    } else {
+        cout << "\nExecution Failed: No valid solution matrix matches this configuration." << endl;
+    }
+
+    return 0;
+}
